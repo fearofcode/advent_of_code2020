@@ -8,10 +8,12 @@ fn day1() {
     let file = File::open("day1.input").unwrap();
     let str_lines = io::BufReader::new(file).lines();
 
-    let numbers: Vec<usize> = str_lines.into_iter().map(|line| line.unwrap().parse().unwrap()).collect();
+    let numbers: Vec<usize> = str_lines
+        .into_iter()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect();
 
     for (i, num1) in numbers.iter().enumerate() {
-
         for (j, num2) in numbers.iter().enumerate() {
             if j < i {
                 continue;
@@ -23,18 +25,19 @@ fn day1() {
                 }
 
                 if num1 + num2 + num3 == 2020 {
-                    println!("{} * {} * {} = {}. {} + {} + {} = {}",
-                             num1,
-                             num2,
-                             num3,
-                             num1 * num2 * num3,
-                             num1,
-                             num2,
-                             num3,
-                             num1 + num2 + num3);
+                    println!(
+                        "{} * {} * {} = {}. {} + {} + {} = {}",
+                        num1,
+                        num2,
+                        num3,
+                        num1 * num2 * num3,
+                        num1,
+                        num2,
+                        num3,
+                        num1 + num2 + num3
+                    );
                 }
             }
-
         }
     }
 }
@@ -52,7 +55,10 @@ fn day2() {
 
         let bound_str = parts[0];
         // could also use regexes here
-        let bound_parts: Vec<usize> = bound_str.split("-").map(|token| token.parse().unwrap()).collect();
+        let bound_parts: Vec<usize> = bound_str
+            .split("-")
+            .map(|token| token.parse().unwrap())
+            .collect();
         let lower_bound = bound_parts[0];
         let upper_bound = bound_parts[1];
 
@@ -90,7 +96,10 @@ fn day2() {
 
         let bound_str = parts[0];
         // could also use regexes here
-        let bound_parts: Vec<usize> = bound_str.split("-").map(|token| token.parse().unwrap()).collect();
+        let bound_parts: Vec<usize> = bound_str
+            .split("-")
+            .map(|token| token.parse().unwrap())
+            .collect();
         let index1 = bound_parts[0] - 1;
         let index2 = bound_parts[1] - 1;
 
@@ -113,6 +122,79 @@ fn day2() {
     println!("correct passwords (second part): {}", correct_password_cnt);
 }
 
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Debug)]
+enum MapCell {
+    Square,
+    Tree,
+}
+
+fn trees_encountered(right: usize, down: usize) -> usize {
+    let file = File::open("day3.input").unwrap();
+
+    // could also use bool and you'd have to pick whether true meant tree or square
+    let map_lines: Vec<Vec<MapCell>> = io::BufReader::new(file)
+        .lines()
+        .map(|line| {
+            let line = line.unwrap();
+            line.chars()
+                .map(|c| {
+                    assert!(c == '.' || c == '#');
+                    if c == '.' {
+                        MapCell::Square
+                    } else {
+                        MapCell::Tree
+                    }
+                })
+                .collect()
+        })
+        .collect();
+
+    let mut current_col = 0;
+
+    let mut trees_encountered = 0;
+
+    for (i, line) in map_lines.iter().step_by(down).enumerate() {
+        // let column wrap around
+        let effective_col = current_col % line.len();
+        if line[effective_col] == MapCell::Tree && i > 0 {
+            trees_encountered += 1;
+        }
+
+        current_col += right;
+    }
+
+    trees_encountered
+}
+
+fn day3() {
+    /*
+    Right 1, down 1.
+    Right 3, down 1. (This is the slope you already checked.)
+    Right 5, down 1.
+    Right 7, down 1.
+    Right 1, down 2.
+    */
+
+    let right1down1 = trees_encountered(1, 1);
+    // print out values to see if we get reasonable-looking return values
+    println!("right 1 down 1 = {}", right1down1);
+    let right3down1 = trees_encountered(3, 1);
+    println!("right 3 down 1 = {}", right3down1);
+    assert_eq!(right3down1, 272);
+
+    let right5down1 = trees_encountered(5, 1);
+    println!("right 5 down 1 = {}", right5down1);
+    let right7down1 = trees_encountered(7, 1);
+    println!("right 7 down 1 = {}", right7down1);
+    let right1down2 = trees_encountered(1, 2);
+    println!("right 1 down 2 = {}", right1down2);
+
+    println!(
+        "product = {}",
+        right1down1 * right3down1 * right5down1 * right7down1 * right1down2
+    );
+}
+
 fn main() {
-    day2();
+    day3();
 }
